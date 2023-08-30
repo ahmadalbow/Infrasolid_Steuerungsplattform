@@ -1,0 +1,67 @@
+body{
+    font-family: 'Inter', sans-serif;
+}
+
+
+/* Nav start */
+
+.navbar-brand{
+    font-weight: 700;
+    font-size: 2rem;
+}
+
+.navbar{
+height: 86px;
+}
+
+.nav-item a{
+    font-weight: 600 !important;
+}
+/* Nav end */
+
+/* Landing start */
+
+.landing{
+    height: calc(100vh - 86px);
+}
+
+.landing img{
+    height: calc(100vh - 86px);
+    width: 100%;
+    object-fit:cover;
+}
+.landing .black{
+    height: calc(100vh - 86px);
+    width: 100%;
+    background-color: black;
+    opacity: 0.85;
+    position: absolute;
+    
+
+}
+
+
+
+.landing .container{
+    padding-top: 10%;
+}
+
+.radius {
+    width: fit-content !important;
+    overflow: hidden;
+  }
+  
+  .gradient-border-bg {
+    border: 2.5px solid;
+    border-image: linear-gradient(45deg, purple, orange) 1;
+    padding: 1rem;
+  }
+
+.landing a{
+    margin-top: 3rem;
+    font-weight: 600;
+    color: white;
+    text-decoration: none;
+    
+}
+/* Landing end */
