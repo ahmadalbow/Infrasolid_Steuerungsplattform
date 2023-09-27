@@ -8,6 +8,7 @@ class HMP4040:
     channels_power = {}
     def __init__(self, ipaddresse):
         self.url = f"http://{ipaddresse}/scpi_response.txt"
+        self.query("IDN?")
     def query(self,command):
         command = urllib.parse.quote(command)
         body = f"request={command}"
@@ -53,11 +54,28 @@ class HMP4040:
             return
         self.enabled_channels.remove(channel)
 
+    def get_channels_satus(self):
+        result = []
+        for ch in range(1,5):
+            self.query(f"INST OUT{ch}")
+            status = int(self.query("OUTP:SEL?"))
+            result.append((ch,status))
+        return result
+                
+
+        
+
+            
+
     def disable_output(self):
         self.query(f"OUTP:GEN 0")
 
     def enable_output(self):
         self.query(f"OUTP:GEN 1")
+
+    def get_output_status(self):
+        return int(self.query(f"OUTP:GEN?"))
+
 
     def set_power(self,channel, power):
         self.channels_power[channel] = power
@@ -75,19 +93,19 @@ class HMP4040:
     def read_power(self,channel):
 
         return self.read_curr(channel)*self.read_volt(channel)
-    def power_correcter(self):
-        while(True):
-            for channel in self.enabled_channels:
-                must_power = self.channels_power[channel]
-                curr_power = self.read_power(channel)
-                error = abs(must_power - curr_power) / must_power * 100
-                while (error > 1):
-                    R = self.read_volt(channel) / self.read_curr(channel)
-                    if(self.read_curr_limit(channel) < math.sqrt(must_power / R)):
-                        self.set_curr(channel,math.sqrt(must_power / R))
-                    self.set_volt(channel, math.sqrt(must_power * R))
-                    error = abs(must_power - curr_power) / must_power * 100
-                    time.sleep(0.7)
+    
+
+    def power_correcter(self,channel,must_power):
+        time.sleep(1)
+        R = self.read_volt(channel) / self.read_curr(channel)
+        if(self.read_curr_limit(channel) < math.sqrt(must_power / R)):
+            self.set_curr(channel,math.sqrt(must_power / R))
+        else :
+            self.set_volt(channel, math.sqrt(must_power * R))
+            
+                
+    
+    
     def start_up(self):
         channels = [1,2,3,4]
         self.disable_output()
