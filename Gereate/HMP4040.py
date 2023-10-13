@@ -1,64 +1,121 @@
+import asyncio
+import csv
+import datetime
 import math
+import os
+import threading
 import time
 import requests
 import urllib.parse
 class HMP4040:
 
-    enabled_channels = []
-    channels_power = {}
+    
     def __init__(self, ipaddresse):
-        self.url = f"http://{ipaddresse}/scpi_response.txt"
+        self.to_be_corrected_channels = []
+        self.channels_power = {}
+        self.ipaddresse = ipaddresse
+        self.url = f"http://{self.ipaddresse}/scpi_response.txt"
         self.query("IDN?")
+
+
+        ########################################
+
+
+        self.interval_seconds = 10  # Default interval
+        self.loop = asyncio.new_event_loop()
+        self.is_saving_running = False
+        self.file_path = None
+        self.task = None
+
+        #######################################      
+                
+        
+        self.start_zyklus()
+
+    def get_ip(self):
+        return self.ipaddresse
+    def get_name(self):
+        return "hmp4040"
     def query(self,command):
         command = urllib.parse.quote(command)
         body = f"request={command}"
-        response = requests.post(self.url, data=body)
-        return response.text
+        try: 
+            response = requests.post(self.url, data=body)
+            return response.text
+        except : 
+            return 
+        
 
-    def set_volt(self,channel,volt):
-        self.query(f"INST OUT{channel}")
-        self.query(f"volt {volt}")
+    def set_volt(self, channel, volt):
+        try:
+            self.query(f"INST OUT{channel}")
+            self.query(f"volt {volt}")
+        except Exception as e:
+            print(f"An error occurred while setting voltage for channel {channel}: {e}")
 
-    def read_volt(self,channel):
-        self.query(f"INST OUT{channel}")
-        return float(self.query("MEAS:volt?"))
+    def read_volt(self, channel):
+        try:
+            self.query(f"INST OUT{channel}")
+            return float(self.query("MEAS:volt?"))
+        except Exception as e:
+            print(f"An error occurred while reading voltage for channel {channel}: {e}")
+            return None  # You might want to handle the error more gracefully.
 
     def read_volt_limit(self, channel):
-        self.query(f"INST OUT{channel}")
-        return float(self.query("volt?"))
+        try:
+            self.query(f"INST OUT{channel}")
+            return float(self.query("volt?"))
+        except Exception as e:
+            print(f"An error occurred while reading voltage limit for channel {channel}: {e}")
+            return None  # You might want to handle the error more gracefully.
 
     def set_curr(self, channel, curr):
-        self.query(f"INST OUT{channel}")
-        self.query(f"CURR {curr}")
+        try:
+            self.query(f"INST OUT{channel}")
+            self.query(f"CURR {curr}")
+        except Exception as e:
+            print(f"An error occurred while setting current for channel {channel}: {e}")
+
     def read_curr(self, channel):
-        self.query(f"INST OUT{channel}")
-        return float(self.query("MEAS:CURR?"))
+        try:
+            self.query(f"INST OUT{channel}")
+            return float(self.query("MEAS:CURR?"))
+        except Exception as e:
+            print(f"An error occurred while reading current for channel {channel}: {e}")
+            return None  # You might want to handle the error more gracefully.
 
     def read_curr_limit(self, channel):
-        self.query(f"INST OUT{channel}")
-        return float(self.query("CURR?"))
+        try:
+            self.query(f"INST OUT{channel}")
+            return float(self.query("CURR?"))
+        except Exception as e:
+            print(f"An error occurred while reading current limit for channel {channel}: {e}")
+            return None  # You might want to handle the error more gracefully.
 
-    def enable_Channel(self,channel):
-
-        self.query(f"INST OUT{channel}")
-        self.query(f"OUTP:SEL 1")
-        if (self.enabled_channels.__contains__(channel)):
-            return
-        self.enabled_channels.append(channel)
+    def enable_Channel(self, channel):
+        try:
+            self.query(f"INST OUT{channel}")
+            self.query(f"OUTP:SEL 1")
+        except Exception as e:
+            print(f"An error occurred while enabling channel {channel}: {e}")
 
     def disable_Channel(self, channel):
+        try:
+            self.query(f"INST OUT{channel}")
+            self.query("OUTP:SEL 0")
+        except Exception as e:
+            print(f"An error occurred while disabling channel {channel}: {e}")
 
-        self.query(f"INST OUT{channel}")
-        self.query("OUTP:SEL 0")
-        if (not self.enabled_channels.__contains__(channel)):
-            return
-        self.enabled_channels.remove(channel)
+        
 
     def get_channels_satus(self):
         result = []
         for ch in range(1,5):
             self.query(f"INST OUT{ch}")
-            status = int(self.query("OUTP:SEL?"))
+            try :
+                status = int(self.query("OUTP:SEL?"))
+            except:
+                continue
             result.append((ch,status))
         return result
                 
@@ -66,15 +123,26 @@ class HMP4040:
         
 
             
-
     def disable_output(self):
-        self.query(f"OUTP:GEN 0")
+        try:
+            self.query("OUTP:GEN 0")
+        except Exception as e:
+            print(f"An error occurred while disabling the output: {e}")
 
     def enable_output(self):
-        self.query(f"OUTP:GEN 1")
+        try:
+            self.query("OUTP:GEN 1")
+        except Exception as e:
+            print(f"An error occurred while enabling the output: {e}")
 
     def get_output_status(self):
-        return int(self.query(f"OUTP:GEN?"))
+        try:
+            status = self.query("OUTP:GEN?")
+            return int(status) if status is not None else None
+        except Exception as e:
+            print(f"An error occurred while getting the output status: {e}")
+            return None
+
 
 
     def set_power(self,channel, power):
@@ -90,21 +158,103 @@ class HMP4040:
         time.sleep(0.7)
         R = self.read_volt(channel) / self.read_curr(channel)
         self.set_volt(channel,math.sqrt(power * R ))
-    def read_power(self,channel):
+    
+    def read_power(self, channel):
+        try:
+            voltage = self.read_volt(channel)
+            current = self.read_curr(channel)
+            if voltage is not None and current is not None:
+                return voltage * current
+            else:
+                return None
+        except Exception as e:
+            print(f"An error occurred while calculating power for channel {channel}: {e}")
+            return None
 
-        return self.read_curr(channel)*self.read_volt(channel)
     
 
-    def power_correcter(self,channel,must_power):
-        time.sleep(1)
-        R = self.read_volt(channel) / self.read_curr(channel)
-        if(self.read_curr_limit(channel) < math.sqrt(must_power / R)):
-            self.set_curr(channel,math.sqrt(must_power / R))
-        else :
-            self.set_volt(channel, math.sqrt(must_power * R))
-            
+ 
+    async def power_correcter(self):
+        
+        while True:
+            print("")
+            print("power_correcter is running")
+            for channel in self.to_be_corrected_channels:
+
+                try :
+                    must_power = self.channels_power[channel]
+                    R = self.read_volt(channel) / self.read_curr(channel)
+                    if self.read_curr_limit(channel) < math.sqrt(must_power / R):
+                        self.set_curr(channel, math.sqrt(must_power / R))
+                    self.set_volt(channel, math.sqrt(must_power * R))
+                    print("channel ",channel, " corrected to ", must_power )
+                except :
+                    pass
+            print("")
+            print("-----------------------------------------")                
+            await asyncio.sleep(self.interval_seconds)
+
+
+
+
+#######################################################
+    def create_data(self):
+        try:   
+                    
+            current_directory = os.path.dirname(__file__)
+            # Specify the relative path to your data folder
+            relative_folder_path = "Data_log"
+            formatted_date_time = datetime.datetime.now().strftime("%d_%m_%Y %H_%M_%S")
+            # Create the full file path by combining the current directory and relative path
+            self.file_path = os.path.join(current_directory, relative_folder_path, f"{self.ipaddresse}_{formatted_date_time}.csv")
+            print(f"{self.ipaddresse}_{formatted_date_time}.csv created")
+            with open(self.file_path, 'a', newline='') as csvfile:
+                # Create a csv.writer object
+                csvwriter = csv.writer(csvfile)
+        
+                # Write the header row
+                csvwriter.writerow(['Zeit', 'Kanal', 'Spannung', 'Strom', 'Leistung'])
                 
+            
+        except Exception as e:
+            print(f"An exception occurred: {e}")
     
+    async def save_data(self):
+        
+        while True:           
+            if ( self.is_saving_running):
+                print("")
+                print("saving is running")   
+                with open(self.file_path, 'a', newline='') as csvfile:
+                # Create a csv.writer object
+                    csvwriter = csv.writer(csvfile)
+
+                    for ch in self.get_channels_satus() :
+                        if (ch[1]):                            
+                            try :
+                                formatted_date_time = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                                data = [formatted_date_time,ch[0],round(self.read_volt(ch[0]), 3),round(self.read_curr(ch[0]), 3),round(self.read_power(ch[0]), 3)]
+                                csvwriter.writerow(data)
+                                print(data, " saved")
+                            except: 
+                                pass
+            await asyncio.sleep(self.interval_seconds)
+
+    def run_periodically(self):
+        asyncio.set_event_loop(self.loop)
+        self.loop.run_until_complete(asyncio.gather(self.save_data(),self.power_correcter()))
+
+    def start_zyklus(self, interval_seconds = 10):
+        self.interval_seconds = interval_seconds
+        self.saving_task = threading.Thread(target=self.run_periodically)
+        self.saving_task.daemon = True
+        self.saving_task.start()
+
+
+
+
+
+#######################################################
     
     def start_up(self):
         channels = [1,2,3,4]
@@ -113,3 +263,4 @@ class HMP4040:
             self.disable_Channel(channel)
             self.set_volt(channel,1)
 
+ 

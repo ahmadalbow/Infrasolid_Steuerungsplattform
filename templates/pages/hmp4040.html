@@ -35,12 +35,20 @@
     </div>
 </div>
 {% endif %}
+<p id = "hidden_channels_status" style = "display : none" >[{{channels_status.0.1}},{{channels_status.1.1}},{{channels_status.2.1}},{{channels_status.3.1}}]</p>
+<p id = "auto_corrector_status" style = "display : none"  > {{to_be_corrected_channels}}</p>
+<p  id = "is_saving_running" style = "display : none"  >{{isSavingRunning}}</p>
 <div class = "text-center mt-3"> <h1> <span style = "font-weight : 700">  Rohde & Schwarz </span> HMP4040</h1></div>
 <div class =  "text-center mt-3 text-muted"> <h4> IP Address : {{ip}}</h4></div>
-<form method = "POST">
-    {% csrf_token %}
-    <div class =  "text-center mt-5 "> <h4 style = "font-weight : 600 !important"> Kanäle</h4></div>
+<div class =  "text-center mt-5 "> <h4 style = "font-weight : 600 !important"> Kanäle</h4></div>
     <div class="row mt-4 align-items-center  justify-content-center">       
+        <div class="col-3 ">
+            <form method = "POST">
+              {% csrf_token %}
+              <input id = "zyklus"style = "width:45%" type="text" name = 'zyklus' placeholder = "Zykluszeit in s" value = "{{zyklus}}">
+              <button class="main-btn " id="updateZyklus" style = "margin-left : 20px" type = "submit">aktualisieren</button>
+            </form>
+        </div> 
         <div class="col-2">
             <input type="checkbox" id="data_speichern" name = 'data_speichern' >
 
@@ -71,9 +79,9 @@
             <p id = "v_ch1"> 32.000 <span style = "font-weight : 500; margin-left:10px">V</span></p>
             <p id = "I_ch1">  10.000 <span style = "font-weight : 500; margin-left:10px">A</span></p>
             <p id = "P_ch1"> 320.000 <span style = "font-weight : 500; margin-left:10px">W</span></p>
-            <input type="text" id="sollwert_1" style = "width:90%" placeholder = "Sollwert eingeben">
+            <input type="text" id="sollwert_1" style = "width:90%" placeholder = "Sollwert eingeben" value = "{{channels_power.1}}">
             <input type="checkbox" id="auto_korrektur1"  >
-            <label class = "checkbox-label mt-2"for="auto_korrektur1" class = "mt-3"> Auto Korrektur</label>
+            <label class = "checkbox-label mt-2"for="auto_korrektur1" class = "mt-3"> Leistung anpassen</label>
         </div>
         <div class="col-2 d-felx flex-column channel-card gap-3 text-center">
             {% if channels_status.1.1 %}
@@ -87,9 +95,9 @@
             <p id = "v_ch2">  32.000 <span style = "font-weight : 500; margin-left:10px">V</span></p>
             <p id = "I_ch2">  10.000 <span style = "font-weight : 500; margin-left:10px">A</span></p>
             <p id = "P_ch2">  320.000 <span style = "font-weight : 500; margin-left:10px">W</span></p>
-            <input type="text" id="sollwert_2" style = "width:90%" placeholder = "Sollwert eingeben">
+            <input type="text" id="sollwert_2" style = "width:90%" placeholder = "Sollwerteingeben" value = "{{channels_power.2}}">
             <input type="checkbox" id="auto_korrektur2"  >
-            <label class = "checkbox-label mt-2"for="auto_korrektur2" class = "mt-3"> Auto Korrektur</label>
+            <label class = "checkbox-label mt-2"for="auto_korrektur2" class = "mt-3"> Leistung anpassen</label>
         </div>
         <div class="col-2 d-felx flex-column channel-card gap-3 text-center">
             {% if channels_status.2.1 %}
@@ -102,9 +110,9 @@
                         <p id = "v_ch3" > 32.000 <span style = "font-weight : 500; margin-left:10px">V</span></p>
             <p id = "I_ch3"> 10.000 <span style = "font-weight : 500; margin-left:10px">A</span></p>
             <p id = "P_ch3"> 320.000 <span style = "font-weight : 500; margin-left:10px">W</span></p>
-            <input type="text" id="sollwert_3" style = "width:90%" placeholder = "Sollwert eingeben">
+            <input type="text" id="sollwert_3" style = "width:90%" placeholder = "Sollwert eingeben" value = "{{channels_power.3}}">
             <input type="checkbox" id="auto_korrektur3" >
-            <label class = "checkbox-label mt-2"for="auto_korrektur3" class = "mt-3"> Auto Korrektur</label>
+            <label class = "checkbox-label mt-2"for="auto_korrektur3" class = "mt-3"> Leistung anpassen</label>
         </div>
         <div class="col-2 d-felx flex-column channel-card gap-3 text-center">
             {% if channels_status.3.1 %}
@@ -117,12 +125,16 @@
             <p id = "v_ch4"> 32.000 <span style = "font-weight : 500; margin-left:10px">V</span></p>
             <p id = "I_ch4"> 10.000 <span style = "font-weight : 500; margin-left:10px">A</span></p>
             <p id = "P_ch4"> 320.000 <span style = "font-weight : 500; margin-left:10px">W</span></p>
-            <input type="text" id="sollwert_4" style = "width:90%" placeholder = "Sollwert eingeben">
+            <input type="text" id="sollwert_4" style = "width:90%" placeholder = "Sollwert eingeben" value = "{{channels_power.4}}">
             <input type="checkbox" id="auto_korrektur4"  >
-            <label class = "checkbox-label mt-2"for="auto_korrektur4" class = "mt-3"> Auto Korrektur</label>
+            <label class = "checkbox-label mt-2"for="auto_korrektur4" class = "mt-3"> Leistung anpassen</label>
         </div>
+        </div>
+<form method = "POST">
+    {% csrf_token %}
+    
         
-    </div>
+   
     <div class = "d-flex gap-3 mt-5 justify-content-center">
         <label class="custom-radio">
             <input type="radio" name="custom-radio-group" value = "V">
@@ -165,322 +177,9 @@
         <button class = "main-btn " type = "submit"> senden</button>
     </div >
 </form>
+
+<script src = "{% static 'js/hmp4040.js' %}"  ></script>
 <script>
-    var data_speichern = document.getElementById("data_speichern");
-
-    // Uncheck the checkbox
-    data_speichern.checked = false;
-
-
-    
-    function createDataRequest(ip) {
-        // Prepare the data to be sent in the POST request
-       
-        var data = {
-          ip: ip
-        };
-      
-        // Perform the POST request using the Fetch API or another library of your choice
-        fetch("/api/create_data/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(data)
-        })
-      }
-    function sendDataRequest(ip, Data) {
-        // Prepare the data to be sent in the POST request
-        console.log("ch : "+ch  )
-        console.log("sollwert : "+sollwert  )
-        var data = {
-          ip: ip,
-          Data: Data
-        };
-      
-        // Perform the POST request using the Fetch API or another library of your choice
-        fetch("/api/save_data/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(data)
-        })
-      }
-      data_speichern.addEventListener("change", function () {
-        var ip = "10.10.0.5";
-        
-        if (this.checked) {
-          // Checkbox is checked, start the interval
-          createDataRequest(ip)
-          this.intervalId = setInterval(function () {
-            for (let i = 1; i<5 ; i++){
-                
-            }
-            sendPostRequest(ip, 1, value1);
-          }, 10000); // 10 seconds
-        } else {
-          // Checkbox is unchecked, stop the interval
-          clearInterval(this.intervalId);
-        }
-      });
-
-      var popupContainer = document.getElementById("popupContainer");
-    var closeButton = document.getElementById("closeButton");
-    if (closeButton != null){
-        closeButton.addEventListener("click", function () {
-            popupContainer.style.display = "none";
-        });
-        for (let i = 1; i<5;i++){
-            // Get a reference to the input element
-            document.getElementById("sollwert_" + i).value = "";    
-            document.getElementById("auto_korrektur" + i).disabled = true;
-            document.getElementById("auto_korrektur" + i).checked = false;
-        }
-        for (let i = 1; i<5;i++){
-                // Get a reference to the input element
-            var sollwert = document.getElementById("sollwert_" + i);
-            
-            // Add an event listener for the "input" event
-            sollwert.addEventListener("input", function(event) {
-            // This function will be called when the text input changes
-            var inputValue = event.target.value;
-            if (!(inputValue === "")){
-                document.getElementById("auto_korrektur" + i).disabled = false;
-                console.log("Checkbox" + i + " enabled");
-            }
-            else{
-                document.getElementById("auto_korrektur" + i).disabled = true;
-                console.log("Checkbox" + i + " disabled");
-    
-            }
-            
-            // Do something with the changed value
-            
-            });
-        
-        }
-    }
-    
-    var checkboxIds = ["auto_korrektur1", "auto_korrektur2", "auto_korrektur3", "auto_korrektur4"];
-
-    // Function to send the POST request
-    function sendPostRequest(ip, ch, sollwert) {
-      // Prepare the data to be sent in the POST request
-      console.log("ch : "+ch  )
-      console.log("sollwert : "+sollwert  )
-      var data = {
-        ip: ip,
-        ch: ch,
-        sollwert: sollwert
-      };
-    
-      // Perform the POST request using the Fetch API or another library of your choice
-      fetch("/api/hmp4040_auto_corrector/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-      })
-      .then(response => {
-        if (response.ok) {
-            document.getElementById("sollwert_" + ch).style.borderColor = "black"
-          console.log("POST request successful");
-        } else {
-            document.getElementById("sollwert_" + ch).style.borderColor = "red"
-          console.error("POST request failed");
-        }
-      })
-      .catch(error => {
-        console.error("Error:", error);
-      });
-    }
-    
-    // Loop through the checkbox IDs and add event listeners
-    var checkbox1 = document.getElementById(checkboxIds[0]);
-    var value1 = document.getElementById("sollwert_1").value
-      checkbox1.addEventListener("change", function () {
-        var ip = "10.10.0.5";
-        
-        if (this.checked) {
-          // Checkbox is checked, start the interval
-          console.log("checkbox " + 1 + " is checked")
-          this.intervalId = setInterval(function () {
-            sendPostRequest(ip, 1, value1);
-          }, 10000); // 10 seconds
-        } else {
-          // Checkbox is unchecked, stop the interval
-          clearInterval(this.intervalId);
-        }
-      });
-
-    var checkbox2 = document.getElementById(checkboxIds[1]);
-     
-      checkbox2.addEventListener("change", function () {
-        var ip = "10.10.0.5";
-        
-        if (this.checked) {
-          // Checkbox is checked, start the interval
-          console.log("checkbox " + 2 + " is checked")
-          this.intervalId = setInterval(function () {
-            sendPostRequest(ip, 2, document.getElementById("sollwert_2").value);
-          }, 10000); // 20 seconds
-        } else {
-          // Checkbox is unchecked, stop the interval
-          clearInterval(this.intervalId);
-        }
-      });
-
-      var checkbox3 = document.getElementById(checkboxIds[2]);
-     
-      checkbox3.addEventListener("change", function () {
-        var ip = "10.10.0.5";
-        
-        if (this.checked) {
-          // Checkbox is checked, start the interval
-          console.log("checkbox " + 3 + " is checked")
-          this.intervalId = setInterval(function () {
-            sendPostRequest(ip, 3, document.getElementById("sollwert_3").value);
-          }, 10000); // 20 seconds
-        } else {
-          // Checkbox is unchecked, stop the interval
-          clearInterval(this.intervalId);
-        }
-      });
-      var checkbox4 = document.getElementById(checkboxIds[3]);
-     
-      checkbox3.addEventListener("change", function () {
-        var ip = "10.10.0.5";
-        
-        if (this.checked) {
-          // Checkbox is checked, start the interval
-          console.log("checkbox " + 4 + " is checked")
-          this.intervalId = setInterval(function () {
-            sendPostRequest(ip, 4, document.getElementById("sollwert_4").value);
-          }, 10000); // 20 seconds
-        } else {
-          // Checkbox is unchecked, stop the interval
-          clearInterval(this.intervalId);
-        }
-      });
-
-
-      function active_channel_req(ip, ch) {
-        // Prepare the data to be sent in the POST request
-        
-        var data = {
-          ip: ip,
-          ch: ch,
-        };
-      
-        // Perform the POST request using the Fetch API or another library of your choice
-        fetch("/api/channel_aktivieren/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(data)
-        })
-        .then(response => {
-        })
-        .catch(error => {
-          console.error("Error:", error);
-        });
-      }
-      function deactive_channel_req(ip, ch) {
-        // Prepare the data to be sent in the POST request
-        
-        var data = {
-          ip: ip,
-          ch: ch,
-        };
-      
-        // Perform the POST request using the Fetch API or another library of your choice
-        fetch("/api/channel_deaktivieren/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(data)
-        })
-        .then(response => {
-        })
-        .catch(error => {
-          console.error("Error:", error);
-        });
-      }
-
-
-      for (let i = 1; i<5;i++){     
-        document.getElementById('ch'+i).addEventListener("change", function () {
-        var ip = "10.10.0.5";
-        console.log("clicked")
-        if (this.checked) {
-          // Checkbox is checked, start the interval
-          active_channel_req(ip, i); // 20 seconds
-        } else {
-          // Checkbox is unchecked, stop the interval
-          deactive_channel_req(ip,i);
-        }
-      });
-      }
-      function enable_out_req(ip, ch) {
-        // Prepare the data to be sent in the POST request
-        
-        var data = {
-          ip: ip,
-          ch: ch,
-        };
-      
-        // Perform the POST request using the Fetch API or another library of your choice
-        fetch("/api/out_aktivieren/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(data)
-        })
-        .then(response => {
-        })
-        .catch(error => {
-          console.error("Error:", error);
-        });
-      }
-      function disable_out_req(ip, ch) {
-        // Prepare the data to be sent in the POST request
-        
-        var data = {
-          ip: ip,
-          ch: ch,
-        };
-      
-        // Perform the POST request using the Fetch API or another library of your choice
-        fetch("/api/out_deaktivieren/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(data)
-        })
-        .then(response => {
-        })
-        .catch(error => {
-          console.error("Error:", error);
-        });
-      }
-
-      document.getElementById("out").addEventListener("change", function () {
-        var ip = "10.10.0.5";
-        console.log("clicked")
-        if (this.checked) {
-          // Checkbox is checked, start the interval
-          enable_out_req(ip); // 20 seconds
-        } else {
-          // Checkbox is unchecked, stop the interval
-          disable_out_req(ip);
-        }
-      });
 
 </script>
 {% endblock container %}
