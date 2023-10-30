@@ -178,15 +178,22 @@ class HMP4040:
         
         while True:
             print("")
-            print("power_correcter is running")
+            print("power_correcter is running ", self.ipaddresse)
             for channel in self.to_be_corrected_channels:
 
                 try :
                     must_power = self.channels_power[channel]
-                    R = self.read_volt(channel) / self.read_curr(channel)
+                    V = self.read_volt(channel)
+                    I = self.read_curr(channel) 
+                    if V == 0:
+                        self.set_power(channel, must_power)
+                        continue
+                    R = V/I
                     if self.read_curr_limit(channel) < math.sqrt(must_power / R):
                         self.set_curr(channel, math.sqrt(must_power / R))
+                    
                     self.set_volt(channel, math.sqrt(must_power * R))
+
                     print("channel ",channel, " corrected to ", must_power )
                 except :
                     pass
@@ -224,7 +231,7 @@ class HMP4040:
         while True:           
             if ( self.is_saving_running):
                 print("")
-                print("saving is running")   
+                print("saving is running ", self.ipaddresse)   
                 with open(self.file_path, 'a', newline='') as csvfile:
                 # Create a csv.writer object
                     csvwriter = csv.writer(csvfile)
