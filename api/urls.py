@@ -10,5 +10,6 @@ urlpatterns = [
     path('out_aktivieren/',views.out_aktivieren) ,
     path('out_deaktivieren/',views.out_deaktivieren) ,
     path('start_saving_Data/',views.start_saving_Data) ,
-     path('stop_saving_Data/',views.stop_saving_Data)
+    path('stop_saving_Data/',views.stop_saving_Data),
+    
 ]

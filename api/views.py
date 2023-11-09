@@ -147,3 +147,17 @@ def stop_saving_Data(request):
     except json.JSONDecodeError as e:
         return JsonResponse({'error': 'Invalid JSON data'}, status=400)  
     
+
+@api_view(['POST'])
+def set_power(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        ip = data.get('ip')
+        ch = data.get("ch")
+        power = data.get("power")
+        hmp4040 = main.get_device(ip)
+        hmp4040.set_power(ch,power)
+        response_data = {}
+        return JsonResponse(response_data, status=200)
+    except json.JSONDecodeError as e:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)  

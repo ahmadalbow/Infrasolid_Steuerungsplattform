@@ -164,32 +164,31 @@
             </div>
     </div>
     <div id="tab2" class="tabcontent">
-        <form method = "POST">
-            {% csrf_token %}
+        
             <div class = "d-flex flex-column mt-5  align-items-center justify-content-center gap-3">  
-
                 <div class="row align-items-center w-75">
-                    <label style="margin-right: 20px;"  class="col-md-2 offset-md-3" > Pfad</label>
-                    <input type="text"  class="col-md-4 " placeholder="Pfad eingeben">
+                    <label style="margin-right: 20px;"  class="col-md-2 offset-md-3" > Unterverzeichnis</label>
+                    <input type="text"  class="col-md-4 " id = "unterverzeichnis" placeholder="Unterverzeichnis eingeben">
                 </div>
                 <div class="row align-items-center w-75">
-                    <label style="margin-right: 20px;"  class="col-md-2 offset-md-3" >Datainame</label>
-                    <input type="Strahlername"  class="col-md-4 " placeholder="Strahlername eingeben">
+                    <label style="margin-right: 20px;"  class="col-md-2 offset-md-3" >Strahlername</label>
+                    <input type="Strahlername"  class="col-md-4 " id="strahlername" placeholder="Strahlername eingeben">
                 </div>
                 <div class="row align-items-center w-75">
-                    <label style="margin-right: 20px;"  class="col-md-2 offset-md-3" >Datainame</label>
-                    <input type="text"  class="col-md-4 " placeholder="Datainame eingeben">
+                    <label style="margin-right: 20px;"  class="col-md-2 offset-md-3" >Soll Leistung</label>
+                    <input type="text"  class="col-md-4 " id="soll_leistung" placeholder="Soll Leistung eingeben">
                 </div>
-                  
-                <button type="submit" class="main-btn mt-4">Messen</button>
+                <div class="d-flex just-conntent-center align-items-center mt-4 " >
+                    <button type="submit" class="main-btn">Messen</button>
+                    <p style="margin-left: 20px;font-weight: 600;" >Messung läuft ...</p>
+                </div>
             </div>
             
-          </form>
+         
         
        
     </div>
-<form method = "POST">
-    {% csrf_token %}
+
     
         
    
@@ -234,8 +233,7 @@
         <div class = "sec-btn d-flex justify-content-center align-items-center  " id = "checkButton" >zurücksetzen </div>
         <button class = "main-btn " type = "submit"> senden</button>
     </div >
-</form>
-
+<p>http://localhost/OpusCommand.htm?COMMAND_LINE MeasureSample (,{EXP= EXP_TR.xpm',XPP='C:\Users\Public\Documents\Bruker\OPUS_8.1.29\XPM', NSS=16, SFM='5V',PTH='C:\Messdaten\OPUS-Rohspektren\' });</p>
 <script src = "{% static 'js/hmp4040.js' %}"  ></script>
 <script>
     function openTab(evt, tabName) {
@@ -258,5 +256,26 @@
         evt.currentTarget.className += " active";
     }
     
+    function modifyString(inputString) {
+        // Check if the input string has at least 4 characters
+        if (inputString.length < 4) {
+          return "Input string is too short";
+        }
+      
+        // Get the last 4 characters of the string
+        const last4Characters = inputString.slice(-4);
+      
+        // Convert the last 4 characters to an integer and add 1
+        const last4Int = parseInt(last4Characters, 10);
+        const modifiedInt = last4Int + 1;
+      
+        // Remove the last 4 characters from the original string
+        const stringWithoutLast4 = inputString.slice(0, -4);
+      
+        // Concatenate the modified integer to the string
+        const modifiedString = stringWithoutLast4 + modifiedInt;
+      
+        return modifiedString;
+      }
 </script>
 {% endblock container %}
