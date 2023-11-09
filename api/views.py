@@ -1,3 +1,4 @@
+import time
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.http import JsonResponse
@@ -158,6 +159,33 @@ def set_power(request):
         hmp4040 = main.get_device(ip)
         hmp4040.set_power(ch,power)
         response_data = {}
+        time.sleep(1)
         return JsonResponse(response_data, status=200)
     except json.JSONDecodeError as e:
         return JsonResponse({'error': 'Invalid JSON data'}, status=400)  
+
+@api_view(['GET'])
+def read_voltage(request):
+    try:
+        hmp4040 = main.get_device(request.GET.get('ip', None))
+        if not hmp4040 == None:
+            # Process the data as needed
+            response_data = {'volt' : hmp4040.read_volt(1)}
+            return JsonResponse(response_data, status=200)
+        else:
+            JsonResponse({}, status=200)
+    except json.JSONDecodeError as e:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    
+@api_view(['GET'])
+def read_curr(request):
+    try:
+        hmp4040 = main.get_device(request.GET.get('ip', None))
+        if not hmp4040 == None:
+            # Process the data as needed
+            response_data = {'curr' : hmp4040.read_curr(1)}
+            return JsonResponse(response_data, status=200)
+        else:
+            JsonResponse({}, status=200)
+    except json.JSONDecodeError as e:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)

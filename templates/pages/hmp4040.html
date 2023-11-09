@@ -69,7 +69,7 @@
 <div class = "text-center mt-3"> <h1> <span style = "font-weight : 700">  Rohde & Schwarz </span> HMP4040</h1></div>
 <div class =  "text-center mt-3 text-muted"> <h4> IP Address : {{ip}}</h4></div>
 
-    <div class="row mt-4 align-items-center  justify-content-center">       
+    <div class="row mt-3 align-items-center  justify-content-center">       
         <div class="col-3 ">
             <form method = "POST">
               {% csrf_token %}
@@ -93,7 +93,7 @@
             <label class = "checkbox-label"for="out">OUTPUT</label>
         </div>
     </div>
-    <div class="tab justify-content-center d-flex gap-3 mt-5">
+    <div class="tab justify-content-center d-flex gap-3 mt-3">
         <button class="tablinks active " onclick="openTab(event, 'tab1') " id = "übersicht">Übersicht</button>
         <button class="tablinks" onclick="openTab(event, 'tab2')" id = "Spektrometer">Spektrometer</button>
     </div>
@@ -165,22 +165,30 @@
     </div>
     <div id="tab2" class="tabcontent">
         
-            <div class = "d-flex flex-column mt-5  align-items-center justify-content-center gap-3">  
+            <div class = "d-flex flex-column mt-4  align-items-center justify-content-center gap-3">  
                 <div class="row align-items-center w-75">
-                    <label style="margin-right: 20px;"  class="col-md-2 offset-md-3" > Unterverzeichnis</label>
+                    <label style="margin-right: 20px;"  class="col-md-2 offset-md-3" > Unterverzeichnis*</label>
                     <input type="text"  class="col-md-4 " id = "unterverzeichnis" placeholder="Unterverzeichnis eingeben">
                 </div>
                 <div class="row align-items-center w-75">
-                    <label style="margin-right: 20px;"  class="col-md-2 offset-md-3" >Strahlername</label>
-                    <input type="Strahlername"  class="col-md-4 " id="strahlername" placeholder="Strahlername eingeben">
+                    <label style="margin-right: 20px;"  class="col-md-2 offset-md-3" >Strahlertyp*</label>
+                    <input   class="col-md-4 " id="strahlertyp" placeholder="Strahlertyp eingeben">
                 </div>
                 <div class="row align-items-center w-75">
-                    <label style="margin-right: 20px;"  class="col-md-2 offset-md-3" >Soll Leistung</label>
-                    <input type="text"  class="col-md-4 " id="soll_leistung" placeholder="Soll Leistung eingeben">
+                    <label style="margin-right: 20px;"  class="col-md-2 offset-md-3" >Strahlernummer*</label>
+                    <input  class="col-md-4 " id="strahlername" placeholder="Strahlernummer eingeben">
                 </div>
-                <div class="d-flex just-conntent-center align-items-center mt-4 " >
-                    <button type="submit" class="main-btn">Messen</button>
-                    <p style="margin-left: 20px;font-weight: 600;" >Messung läuft ...</p>
+                <div class="row align-items-center w-75">
+                    <label style="margin-right: 20px;"  class="col-md-2 offset-md-3" >Soll Leistung*</label>
+                    <input type="text"  class="col-md-4 " id="soll_leistung" placeholder="Soll Leistung in W eingeben">
+                </div>
+                <div class="row align-items-center w-75">
+                    <label style="margin-right: 20px;"  class="col-md-2 offset-md-3" >Komment</label>
+                    <input type="text"  class="col-md-4 " id="komment" placeholder="Komment hinzufügen">
+                </div>
+                <div class="d-flex just-conntent-center align-items-center mt-2 " >
+                    <button type="submit" class="main-btn" id="messen-btn">Messen</button>
+                    <p style="margin-left: 20px;font-weight: 600;" id="status" >Messung läuft ...</p>
                 </div>
             </div>
             
@@ -188,11 +196,12 @@
         
        
     </div>
-
+<form method = "POST">
+    {% csrf_token %}
     
         
    
-    <div class = "d-flex gap-3 mt-5 justify-content-center">
+    <div class = "d-flex gap-3 mt-4 justify-content-center">
         <label class="custom-radio">
             <input type="radio" name="custom-radio-group" value = "V">
             <div class="radio-button text-center">
@@ -233,7 +242,7 @@
         <div class = "sec-btn d-flex justify-content-center align-items-center  " id = "checkButton" >zurücksetzen </div>
         <button class = "main-btn " type = "submit"> senden</button>
     </div >
-<p>http://localhost/OpusCommand.htm?COMMAND_LINE MeasureSample (,{EXP= EXP_TR.xpm',XPP='C:\Users\Public\Documents\Bruker\OPUS_8.1.29\XPM', NSS=16, SFM='5V',PTH='C:\Messdaten\OPUS-Rohspektren\' });</p>
+</form>
 <script src = "{% static 'js/hmp4040.js' %}"  ></script>
 <script>
     function openTab(evt, tabName) {
@@ -256,8 +265,9 @@
         evt.currentTarget.className += " active";
     }
     
-    function modifyString(inputString) {
+    function updateStatus() {
         // Check if the input string has at least 4 characters
+        inputString = document.getElementById("strahlernummer").value;
         if (inputString.length < 4) {
           return "Input string is too short";
         }
@@ -275,7 +285,161 @@
         // Concatenate the modified integer to the string
         const modifiedString = stringWithoutLast4 + modifiedInt;
       
-        return modifiedString;
+        inputString.value = modifiedString
       }
+
+      function setPowerReq(ip, ch, power) {
+        // Prepare the data to be sent in the POST request
+        var data = {
+            ip: ip,
+            ch: ch,
+            power: power
+        };
+    
+        // Perform the POST request using the Fetch API or another library of your choice
+        return fetch("/api/set_power/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        })
+    
+    }
+
+      
+      // Function to send a request to read voltage
+      function readVoltageReq(ip) {
+        return fetch(`/api/read_volt/?ip=${ip}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to read voltage');
+          }
+          return response.json(); // Assuming the response contains JSON data
+        });
+      }
+      
+      // Function to send a 'GET' request to read current
+      function readCurrentReq(ip) {
+        return fetch(`/api/read_curr/?ip=${ip}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to read voltage');
+
+          }
+          return response.json(); // Assuming the response contains JSON data
+        });
+      }
+
+      function checkProgress() {
+        const url = 'http://localhost/OpusCommand.htm?GET_PROGRESSBAR';
+        
+        function handleResponse(responseText) {
+          const progress = parseInt(responseText, 10); // Parse the response as an integer
+            const status = document.getElementById('status');
+
+          if (progress === 0) {
+            clearInterval(interval); // Stop the interval when progress is 0
+            updateStatus(); // Call your "tsss" function
+            status.textContent = "Messugn fertig."
+          }
+          else {
+            status.textContent = "Messugn läuft " + 100*progress + "%."
+
+          }
+        }
+      
+        function fetchData() {
+          fetch(url)
+            .then(response => {
+              if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+              }
+              return response.text();
+            })
+            .then(data => {
+              handleResponse(data);
+            })
+            .catch(error => {
+              console.error('An error occurred:', error);
+            });
+        }
+      
+        const interval = setInterval(fetchData, 500); // Check progress every 0.5 seconds
+      }
+
+      function scannReq(unterverzeichnis,strahlertyp,strahlernummer,soll_leistung,volt,curr,comment) {
+        const url = `http://localhost/OpusCommand.htm?COMMAND_LINE=MeasureSample(,{EXP=EXP_TR.xpm,XPP='C:\\Users\\Public\\Documents\\Bruker\\OPUS_8.1.29\\XPM',NSS=16,SFM='${strahlertyp}_${soll_leistung}W_${volt}V_${curr}mA_${strahlernummer}_${comment}',',PTH='C:\\Messdaten\\OPUS-Rohspektren\\${unterverzeichnis}\\' })`;
+        return fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.text(); // or use response.json() if the response is JSON
+            })
+            .then(data => {
+                // Handle the response data here
+                console.log('Response:', data);
+            })
+            .catch(error => {
+                // Handle any errors that may occur during the request
+                console.error('An error occurred:', error);
+            });
+      }
+
+    let voltage
+    let current 
+
+
+      document.getElementById('messen-btn').addEventListener('click', function() {
+        // Get input values
+        const unterverzeichnis = document.getElementById('unterverzeichnis').value;
+        const strahlername = document.getElementById('strahlername').value;
+        const strahlernummer = document.getElementById('strahlernummer').value;
+        const strahlertyp = document.getElementById('strahlertyp').value;
+        const soll_leistung = document.getElementById('soll_leistung').value;
+  
+        // Construct the URL with input values
+
+     
+    
+        setPowerReq(ipAddress,1,4)
+        .then(() => {
+          return readVoltageReq(ipAddress);
+        })
+        .then(voltageData => {
+          // Save the voltage value to a variable
+          voltage = voltageData['volt'];
+          return readCurrentReq(ipAddress);
+        })
+        .then(currentData => {
+          // Save the current value to a variable
+          current = currentData['curr'];
+          current = parseFloat(1000*current).toFixed(1)
+          voltage = parseFloat(voltage).toFixed(2)
+          // Now you can use the 'voltage' and 'current' variables as needed
+          console.log('Voltage:', voltage);
+    
+          console.log('Current:', current);
+          return scannReq(unterverzeichnis,strahlertyp,strahlernummer,soll_leistung,voltage,current)
+        }).then((data) => {
+            checkProgress();
+        }
+        )
+        .catch(error => {
+          console.error('An error occurred:', error);
+        });
+      });
+      
 </script>
 {% endblock container %}
