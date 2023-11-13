@@ -1,3 +1,4 @@
+import platform
 import subprocess
 import concurrent.futures
 from .jds6600 import jds6600
@@ -8,8 +9,17 @@ class GereateManager:
     @staticmethod
     def is_device_connected(ip_address):
         try:
-        # Run the ping command with a single packet and a timeout of 2 seconds.
-            subprocess.check_output(['ping', '-c', '1', '-W', '0.15', ip_address])
+            os_name = platform.system()
+            # Check if the operating system is Windows
+            if os_name == 'Windows':
+                subprocess.check_output(['ping', "-w" ,'150', ip_address])
+
+            # Check if the operating system is Linux
+            elif os_name == 'Linux':
+                subprocess.check_output(['ping', '-c', '1', '-W', '0.15', ip_address])
+            # Handle other operating systems
+            else:
+                print(f'This is an unsupported operating system: {os_name}')
             return True
         except subprocess.CalledProcessError:
             return False      

@@ -4,9 +4,19 @@ import requests
 from Gereate.GereateManager import GereateManager
 from Gereate.HMP4040 import HMP4040
 from main import main
+import platform
 # Create your views here.
 
 def index(request):
+    os_name = platform.system()
+    if os_name == 'Windows':
+        print('This is a Windows operating system.')
+    # Check if the operating system is Linux
+    elif os_name == 'Linux':
+        print('This is a Linux operating system.')
+    # Handle other operating systems
+    else:
+        print(f'This is an unsupported operating system: {os_name}')
     return render(request, 'pages/index.html',{'ahmad': [1,2,3,4,5]})
 
 def gereate(request):

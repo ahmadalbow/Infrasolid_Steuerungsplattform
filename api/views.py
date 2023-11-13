@@ -1,4 +1,6 @@
 import time
+
+import requests
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.http import JsonResponse
@@ -189,3 +191,42 @@ def read_curr(request):
             JsonResponse({}, status=200)
     except json.JSONDecodeError as e:
         return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    
+@api_view(['POST'])
+def scan(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+
+        hmp4040 = main.get_device(data.get('ip'))
+        unterverzeichnis = data.get('unterverzeichnis')
+        strahlertyp = data.get('strahlertyp')
+        strahlernummer = data.get('strahlernummer')
+        soll_leistung = data.get('soll_leistung')
+        comment = data.get('comment')
+        voltage =  round(hmp4040.read_volt(1), 2)
+        current =  round(1000*hmp4040.read_volt(1), 1)
+
+        url = f'http://localhost/OpusCommand.htm?COMMAND_LINE=MeasureSample(,{{EXP=EXP_TR.xpm,XPP=\'C:\\Users\\Public\\Documents\\Bruker\\OPUS_8.1.29\\XPM\',NSS=16,SFM=\'{strahlertyp}_{soll_leistung}W_{voltage}V_{current}mA_{strahlernummer}_{comment}\',PTH=\'C:\\Messdaten\\OPUS-Rohspektren\\{unterverzeichnis}\\\' }})'
+        send_post_request(url)
+                # Process the data as needed
+
+        response_data = {}
+        return JsonResponse(response_data, status=200)
+    except json.JSONDecodeError as e:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)  
+    
+
+def send_post_request(url):
+    try:
+        # Send a POST request without data
+        response = requests.post(url)
+
+        # Check if the request was successful (status code 200)
+        if response.status_code == 200:
+            print('POST request successful')
+            print('Response:', response.text)
+        else:
+            print(f'Error: {response.status_code} - {response.text}')
+
+    except requests.exceptions.RequestException as e:
+        print('Error sending POST request:', e)

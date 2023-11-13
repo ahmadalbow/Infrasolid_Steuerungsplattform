@@ -176,7 +176,7 @@
                 </div>
                 <div class="row align-items-center w-75">
                     <label style="margin-right: 20px;"  class="col-md-2 offset-md-3" >Strahlernummer*</label>
-                    <input  class="col-md-4 " id="strahlername" placeholder="Strahlernummer eingeben">
+                    <input  class="col-md-4 " id="strahlernummer" placeholder="Strahlernummer eingeben">
                 </div>
                 <div class="row align-items-center w-75">
                     <label style="margin-right: 20px;"  class="col-md-2 offset-md-3" >Soll Leistung*</label>
@@ -400,39 +400,65 @@
     let voltage
     let current 
 
+    function sendScanRequest(unterverzeichnis, strahlertyp, strahlernummer, soll_leistung, comment) {
+        // URL to send the POST request to
+        const url = '/api/scan'; // Replace with your actual API endpoint
+    
+        // Request payload
+        const data = {
+            ip : ipAddress,
+            unterverzeichnis: unterverzeichnis,
+            strahlertyp: strahlertyp,
+            strahlernummer: strahlernummer,
+            soll_leistung: soll_leistung,
+            comment : comment
+            
+        };
+    
+        // Options for the fetch function
+        const options = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json', // Specify the content type as JSON
+                // Add any other headers if needed
+            },
+            body: JSON.stringify(data) // Convert the data object to JSON
+        };
+    
+        // Use the fetch function to send the POST request
+        fetch(url, options)
+            .then(response => {
+                // Check if the response status is in the range 200-299 (indicating success)
+                if (response.ok) {
+                    return response.json(); // Parse the JSON in the response
+                } else {
+                    throw new Error(`Error: ${response.status} - ${response.statusText}`);
+                }
+            })
+            .then(data => {
+                console.log('POST request successful:', data);
+                // Handle the response data as needed
+            })
+            .catch(error => {
+                console.error('Error sending POST request:', error);
+                // Handle the error as needed
+            });
+    }
 
       document.getElementById('messen-btn').addEventListener('click', function() {
         // Get input values
         const unterverzeichnis = document.getElementById('unterverzeichnis').value;
-        const strahlername = document.getElementById('strahlername').value;
         const strahlernummer = document.getElementById('strahlernummer').value;
         const strahlertyp = document.getElementById('strahlertyp').value;
         const soll_leistung = document.getElementById('soll_leistung').value;
-  
+        const comment = document.getElementById('komment').value;
+
         // Construct the URL with input values
 
      
     
-        setPowerReq(ipAddress,1,4)
-        .then(() => {
-          return readVoltageReq(ipAddress);
-        })
-        .then(voltageData => {
-          // Save the voltage value to a variable
-          voltage = voltageData['volt'];
-          return readCurrentReq(ipAddress);
-        })
-        .then(currentData => {
-          // Save the current value to a variable
-          current = currentData['curr'];
-          current = parseFloat(1000*current).toFixed(1)
-          voltage = parseFloat(voltage).toFixed(2)
-          // Now you can use the 'voltage' and 'current' variables as needed
-          console.log('Voltage:', voltage);
-    
-          console.log('Current:', current);
-          return scannReq(unterverzeichnis,strahlertyp,strahlernummer,soll_leistung,voltage,current)
-        }).then((data) => {
+        sendScanRequest(unterverzeichnis,strahlertyp,strahlernummer,soll_leistung,comment)
+        .then((data) => {
             checkProgress();
         }
         )

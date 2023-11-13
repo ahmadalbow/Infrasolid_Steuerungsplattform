@@ -13,5 +13,6 @@ urlpatterns = [
     path('stop_saving_Data/',views.stop_saving_Data),
     path('set_power/',views.set_power),
     path('read_volt/',views.read_voltage),
-    path('read_curr/',views.read_curr)
+    path('read_curr/',views.read_curr),
+    path('scan/',views.scan)
 ]
